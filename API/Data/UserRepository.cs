@@ -154,16 +154,32 @@ public class UserRepository : IUserRepository
     //                userParams.PageNumber, userParams.PageSize);
     //}
 
-    /// <summary>
-    /// Returns Id of photo inserted
-    /// </summary>
-    /// <param name="photo"></param>
-    /// <returns>Id of photo inserted</returns>
-    //public async Task<int> AddPhotoAsync(Photo photo)
-    //{
-    //    var res = await db.InsertAsync(photo);
 
-    //    return res;
-    //}
 
+    ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
+    public async Task<int> AddPhotoAsync(Photo photo)
+    {
+        var res = await db.InsertAsync(photo);
+
+        return res;
+    }
+
+    ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
+    public async Task<bool> UpdatePhotos(List<Photo> photos)
+    {
+        var res = await db.UpdateAsync(photos);
+
+        return res;
+    }
+
+    ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
+    public async Task<bool> DeletePhoto(int id)
+    {
+        var res = await db.DeleteAsync(new Photo() { Id = id });
+
+        return res;
+    }
 }

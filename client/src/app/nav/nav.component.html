@@ -22,8 +22,10 @@
             </li>
         </ul>
 
-        <div class="nav-item dropdown" dropdown *ngIf="accontService.currentUser$ | async">
-            <a class="nav-link dropdown-toggle" role="button" dropdownToggle>
+        <div class="nav-item dropdown" dropdown *ngIf="(accontService.currentUser$ | async) as user">
+            <img src="{{user.photoUrl || './assets/user.png'}}" alt="user photo">
+
+            <a class="dropdown-toggle text-decoration-none text-dark ms-1" role="button" dropdownToggle>
                 Welcome user
             </a>
 

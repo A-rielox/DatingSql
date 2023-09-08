@@ -19,5 +19,7 @@ public interface IUserRepository
 
 
 
-    //Task<int> AddPhotoAsync(Photo photo);
+    Task<int> AddPhotoAsync(Photo photo);
+    Task<bool> UpdatePhotos(List<Photo> photos);
+    Task<bool> DeletePhoto(int id);
 }

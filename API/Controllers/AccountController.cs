@@ -16,11 +16,15 @@ public class AccountController : BaseApiController
 {
     private IDbConnection db;
     private readonly ITokenService _tokenService;
+    private readonly IUserRepository _userRepository;
 
-    public AccountController(IConfiguration configuration, ITokenService tokenService)
+    public AccountController(IConfiguration configuration, 
+                             ITokenService tokenService,
+                             IUserRepository userRepository)
     {
         this.db = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
         _tokenService = tokenService;
+        _userRepository = userRepository;
     }
 
     ////////////////////////////////////////////////
@@ -57,11 +61,12 @@ public class AccountController : BaseApiController
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
-        var user = (
-                    await db.QueryAsync<AppUser>("sp_getUserByUserName",
-                                new { userName = loginDto.Username },
-                                commandType: CommandType.StoredProcedure)
-                    ).FirstOrDefault();
+        //var user = (
+        //            await db.QueryAsync<AppUser>("sp_getUserByUserName",
+        //                        new { userName = loginDto.Username },
+        //                        commandType: CommandType.StoredProcedure)
+        //            ).FirstOrDefault();
+        var user = await _userRepository.GetUserByUsernameAsync(loginDto.Username);
 
         if (user == null) return Unauthorized("Invalid Username.");
 
@@ -77,7 +82,8 @@ public class AccountController : BaseApiController
         var userDto = new UserDto
         {
             UserName = user.UserName,
-            Token = _tokenService.CreateToken(user)
+            Token = _tokenService.CreateToken(user),
+            PhotoUrl = user.Photos.FirstOrDefault(p => p.IsMain == 1)?.Url
         };
 
         return Ok(userDto);
