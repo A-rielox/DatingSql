@@ -28,7 +28,8 @@ public class AppUser
 
     // relacion one-to-many ( un user many photos )
     // p' decirle a Dapper que esta prop no es writeable ( esta prop NO va a la tabla )
-    //[Write(false)]
+    // xq al hacer el update le paso a dapper un AppUser y me trataba de hacer update a esta prop
+    [Write(false)]
     public List<Photo> Photos { get; set; } = new();
     // el Photo hago
     // p'q ocupe la id del AppUser como foreign-key

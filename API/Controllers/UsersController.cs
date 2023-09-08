@@ -4,6 +4,7 @@ using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API.Controllers;
 
@@ -44,4 +45,33 @@ public class UsersController : BaseApiController
 
         return Ok(member);
     }
+
+
+    //////////////////////////////////////////////
+    /////////////////////////////////////////////////
+    // PUT api/Users
+    [HttpPut]
+    public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
+    {
+        var username = User.FindFirst(ClaimTypes.Name)?.Value;
+        //var username = User.GetUsername();
+
+        var user = await _userRepository.GetUserByUsernameAsync(username);
+
+        if (user == null) return NotFound();
+
+        // lo q esta em memberUpdateDto lo mete a user
+        //                |---------->
+        _mapper.Map(memberUpdateDto, user);
+
+        // aùn y si no hay cambios me sobreescribe todo
+        if (await _userRepository.UpdateAsync(user)) return NoContent();
+
+        return BadRequest("Failed to update user.");
+    }
+
+
+    ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
+    // POST: api/Users/add-photo
 }

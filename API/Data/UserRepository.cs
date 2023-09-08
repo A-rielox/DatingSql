@@ -93,7 +93,6 @@ public class UserRepository : IUserRepository
     ///////////////////////////////////////////////////
     public async Task<bool> UpdateAsync(AppUser user)
     {
-        //_context.Entry(user).State = EntityState.Modified;
         var res = await db.UpdateAsync(user); // contrib
 
         return res;
