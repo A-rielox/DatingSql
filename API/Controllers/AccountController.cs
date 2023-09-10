@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
+using AutoMapper;
 
 namespace API.Controllers;
 
@@ -17,14 +18,18 @@ public class AccountController : BaseApiController
     private IDbConnection db;
     private readonly ITokenService _tokenService;
     private readonly IUserRepository _userRepository;
+    private readonly IMapper _mapper;
 
     public AccountController(IConfiguration configuration, 
                              ITokenService tokenService,
-                             IUserRepository userRepository)
+                             IUserRepository userRepository,
+                             IMapper mapper)
     {
+        // pasar a userRepo todo lo q ocupa db
         this.db = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
         _tokenService = tokenService;
         _userRepository = userRepository;
+        _mapper = mapper;
     }
 
     ////////////////////////////////////////////////
@@ -35,20 +40,20 @@ public class AccountController : BaseApiController
     {
         if (await UserExists(registerDto.Username)) return BadRequest("Username is taken");
 
+        var user = _mapper.Map<AppUser>(registerDto);
+
         using var hmac = new HMACSHA512();
 
-        var user = new AppUser
-        {
-            UserName = registerDto.Username.ToLower(),
-            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-            PasswordSalt = hmac.Key
-        };
+        user.UserName = registerDto.Username.ToLower();
+        user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
+        user.PasswordSalt = hmac.Key;
 
         db.Insert(user);
 
         var userDto = new UserDto
         {
             UserName = user.UserName,
+            KnownAs = user.KnownAs,
             Token = _tokenService.CreateToken(user)
         };
 
@@ -82,6 +87,7 @@ public class AccountController : BaseApiController
         var userDto = new UserDto
         {
             UserName = user.UserName,
+            KnownAs = user.KnownAs,
             Token = _tokenService.CreateToken(user),
             PhotoUrl = user.Photos.FirstOrDefault(p => p.IsMain == 1)?.Url
         };
