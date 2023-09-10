@@ -4,6 +4,7 @@ using System.Data;
 using API.Entities;
 using Dapper.Contrib.Extensions;
 using Dapper;
+using API.Helpers;
 
 namespace API.Data;
 
@@ -15,8 +16,6 @@ public class UserRepository : IUserRepository
     {
         this.db = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
     }
-
-
 
 
     ////////////////////////////////////////////////
@@ -45,12 +44,13 @@ public class UserRepository : IUserRepository
         }
 
         return user;
+        /* VIEJO SIMPLE
+        var user = await db.QueryAsync<AppUser>("sp_getUserByUserName",
+                                  new { userName = username },
+                                  commandType: CommandType.StoredProcedure);
 
-        //var user = await db.QueryAsync<AppUser>("sp_getUserByUserName",
-        //                          new { userName = username },
-        //                          commandType: CommandType.StoredProcedure);
-
-        //return user.SingleOrDefault();
+        return user.SingleOrDefault();
+        */
     }
 
     ////////////////////////////////////////////////
@@ -74,28 +74,40 @@ public class UserRepository : IUserRepository
         });
 
         return users;
+        /* VIEJO SIMPLE
+        var users = await db.QueryAsync<AppUser>("sp_getAllUsers",
+                                    commandType: CommandType.StoredProcedure);
 
-        //var users = await db.QueryAsync<AppUser>("sp_getAllUsers",
-        //                            commandType: CommandType.StoredProcedure);
-
-        //return users.ToList();
+        return users.ToList();
+        */
     }
 
     ////////////////////////////////////////////////
     ///////////////////////////////////////////////////
-    public async Task<bool> SaveAllAsync()
+    public async Task<bool> UpdateUserAsync(AppUser user)
     {
-        //return await _context.SaveChangesAsync() > 0;
-        return false;
-    }
+        // si es exitosa me retorna 1 ( la cantidad de cols editadas )
+        var parameters = new DynamicParameters();
 
-    ////////////////////////////////////////////////
-    ///////////////////////////////////////////////////
-    public async Task<bool> UpdateAsync(AppUser user)
-    {
-        var res = await db.UpdateAsync(user); // contrib
+        parameters.Add("@userId", user.Id);
+        parameters.Add("@introduction", user.Introduction);
+        parameters.Add("@lookingFor", user.LookingFor);
+        parameters.Add("@interests", user.Interests);
+        parameters.Add("@city", user.City);
+        parameters.Add("@country", user.Country);
 
-        return res;
+        var res = await db.QueryAsync<int>("sp_updateUser",
+                                            parameters,
+                                            commandType: CommandType.StoredProcedure);
+
+        var querySucc = res.FirstOrDefault();
+
+        return querySucc == 1 ? true : false;
+
+
+        /* con Dapper Contrib
+         var res = await db.UpdateAsync(user);
+         return res; */
     }
 
     ////////////////////////////////////////////////
@@ -167,19 +179,48 @@ public class UserRepository : IUserRepository
 
     ////////////////////////////////////////////////
     ///////////////////////////////////////////////////
-    public async Task<bool> UpdatePhotos(List<Photo> photos)
+    public async Task<bool> UpdatePhotos(SetMainPhoto setMainPhoto)
     {
-        var res = await db.UpdateAsync(photos);
+        // si es exitosa me retorna 2 ( la cantidad de cols editadas )
+        var parameters = new DynamicParameters();
 
-        return res;
+        parameters.Add("@oldMainId", setMainPhoto.oldMainId);
+        parameters.Add("@newMainId", setMainPhoto.newMainId);
+
+        var res = await db.QueryAsync<int>("sp_setMainPhoto",
+                                            parameters,
+                                            commandType: CommandType.StoredProcedure);
+
+        var querySucc = res.FirstOrDefault();
+
+        return querySucc == 2 ? true : false;
     }
+
+    /* ANTIGUO
+        public async Task<bool> UpdatePhotos(List<Photo> photos)
+        {
+            var res = await db.UpdateAsync(photos);
+
+            return res;
+        }
+    */
 
     ////////////////////////////////////////////////
     ///////////////////////////////////////////////////
     public async Task<bool> DeletePhoto(int id)
     {
+        var res = await db.QueryAsync<int>("sp_deletePhoto",
+                                            new { photoId = id },
+                                            commandType: CommandType.StoredProcedure);
+
+        var querySucc = res.FirstOrDefault();
+
+        return querySucc == 1 ? true : false;
+
+        /* Dapper Contrib
         var res = await db.DeleteAsync(new Photo() { Id = id });
 
         return res;
+        */
     }
 }

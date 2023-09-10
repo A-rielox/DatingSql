@@ -1,6 +1,7 @@
 ﻿using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using API.Services;
 using AutoMapper;
@@ -70,7 +71,7 @@ public class UsersController : BaseApiController
         _mapper.Map(memberUpdateDto, user);
 
         // aùn y si no hay cambios me sobreescribe todo
-        if (await _userRepository.UpdateAsync(user)) return NoContent();
+        if (await _userRepository.UpdateUserAsync(user)) return NoContent();
 
         return BadRequest("Failed to update user.");
     }
@@ -136,6 +137,35 @@ public class UsersController : BaseApiController
 
         var currentMain = user.Photos.FirstOrDefault(p => p.IsMain == 1);
 
+        //if (currentMain != null) currentMain.IsMain = 0;
+
+        //photo.IsMain = 1;
+        //// tengo q actualizar las 2 fotos ( la nueva y la vieja mail )
+        //List<Photo> photoList = new()
+        //{
+        //    photo,
+        //    currentMain
+        //};
+
+        var obj = new SetMainPhoto(currentMain.Id, photoId);
+
+        if (await _userRepository.UpdatePhotos(obj)) return NoContent();
+
+        return BadRequest("Problem setting the main photo");
+
+        /* EL ANTIGUO
+        var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+
+        if (user == null) return NotFound();
+
+        var photo = user.Photos.FirstOrDefault(p => p.Id == photoId);
+
+        if (photo == null) return NotFound();
+
+        if (photo.IsMain == 1) return BadRequest("This is already your main photo.");
+
+        var currentMain = user.Photos.FirstOrDefault(p => p.IsMain == 1);
+
         if (currentMain != null) currentMain.IsMain = 0;
 
         photo.IsMain = 1;
@@ -149,6 +179,7 @@ public class UsersController : BaseApiController
         if (await _userRepository.UpdatePhotos(photoList)) return NoContent();
 
         return BadRequest("Problem setting the main photo");
+        */
     }
 
     ////////////////////////////////////////////////
@@ -172,10 +203,6 @@ public class UsersController : BaseApiController
             var result = await _photoService.DeletePhotoAsync(photo.PublicId);
             if (result.Error != null) return BadRequest(result.Error.Message);
         }
-
-        //user.Photos.Remove(photo);
-
-        //if (await _userRepository.SaveAllAsync()) return Ok();
 
         if(await _userRepository.DeletePhoto(photo.Id)) return Ok();
 
