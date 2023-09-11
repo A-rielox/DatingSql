@@ -44,6 +44,19 @@ public class UsersController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<AppUserPagedList>> GetUsers([FromQuery] UserParams userParams)
     {// el está usando getMembers
+        var currentUser = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+
+        // p'q no me mande a mi en la lista de usuarios
+        userParams.CurrentUsername = currentUser.UserName;
+
+        // p'q xdefault me mande el sexo opuesto
+        if(string.IsNullOrEmpty(userParams.Gender))
+        {
+            userParams.Gender = currentUser.Gender == "male" ? "female" : "male";
+        }
+
+
+
         AppUserPagedList users = await _userRepository.GetPagedUsersAsync(userParams);
 
         var members = _mapper.Map<IEnumerable<MemberDto>>(users);

@@ -24,9 +24,9 @@ public class UserParams
         set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
     }
 
-    //public string CurrentUsername { get; set; }
-    //public string Gender { get; set; }
-    //public int MinAge { get; set; } = 18;
-    //public int MaxAge { get; set; } = 100;
-    //public string OrderBy { get; set; } = "lastActive";
+    public string CurrentUsername { get; set; }
+    public string Gender { get; set; }
+    public int MinAge { get; set; } = 18; // p' lo mas viejo
+    public int MaxAge { get; set; } = 100; // p' los mas jovenes
+    public string OrderBy { get; set; } = "lastActive";
 }

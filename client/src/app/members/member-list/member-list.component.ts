@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, take } from 'rxjs';
 import { Member } from 'src/app/_models/member';
 import { Pagination } from 'src/app/_models/pagination';
+import { User } from 'src/app/_models/user';
+import { UserParams } from 'src/app/_models/userParams';
+import { AccountService } from 'src/app/_services/account.service';
 import { MembersService } from 'src/app/_services/members.service';
 
 @Component({
@@ -10,21 +13,38 @@ import { MembersService } from 'src/app/_services/members.service';
    styleUrls: ['./member-list.component.css'],
 })
 export class MemberListComponent implements OnInit {
-   // members$: Observable<Member[]> | undefined;
    members: Member[] = [];
    pagination: Pagination | undefined;
-   pageNumber = 1;
-   pageSize = 5;
+   userParams: UserParams | undefined;
+   user: User | undefined;
 
-   constructor(private membersService: MembersService) {}
+   genderList = [
+      { value: 'male', display: 'Males' },
+      { value: 'female', display: 'Females' },
+   ];
+
+   constructor(
+      private membersService: MembersService,
+      private accountService: AccountService
+   ) {
+      this.accountService.currentUser$.pipe(take(1)).subscribe({
+         next: (res) => {
+            if (res) {
+               this.userParams = new UserParams(res);
+               this.user = res;
+            }
+         },
+      });
+   }
 
    ngOnInit(): void {
-      // this.members$ = this.membersService.getMembers();
       this.loadMembers();
    }
 
    loadMembers() {
-      this.membersService.getMembers(this.pageNumber, this.pageSize).subscribe({
+      if (!this.userParams) return;
+
+      this.membersService.getMembers(this.userParams).subscribe({
          next: (res) => {
             if (res.result && res.pagination) {
                this.members = res.result;
@@ -34,9 +54,20 @@ export class MemberListComponent implements OnInit {
       });
    }
 
+   resetFilters() {
+      if (this.user) {
+         this.userParams = new UserParams(this.user);
+         this.loadMembers();
+      }
+
+      // this.userParams = this.memberService.resetUserParams();
+
+      // this.loadMembers();
+   }
+
    pageChanged(e: any) {
-      if (this.pageNumber !== e.page) {
-         this.pageNumber = e.page;
+      if (this.userParams && this.userParams?.pageNumber !== e.page) {
+         this.userParams.pageNumber = e.page;
          this.loadMembers();
       }
 

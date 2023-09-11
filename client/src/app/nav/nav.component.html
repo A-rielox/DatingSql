@@ -26,7 +26,7 @@
             <img src="{{user.photoUrl || './assets/user.png'}}" alt="user photo">
 
             <a class="dropdown-toggle text-decoration-none text-dark ms-1" role="button" dropdownToggle>
-                Welcome {{user.userName | titlecase}}
+                Welcome {{user.knownAs | titlecase}}
             </a>
 
             <ul class="dropdown-menu" *dropdownMenu>

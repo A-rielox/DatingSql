@@ -23,12 +23,25 @@ public class AppUserPagedList : List<AppUser>
 
     // este metodo retorna una instancia de esta clase con la info
     // source es la query
-    public static async Task<AppUserPagedList> CreateAsync(IDbConnection db, int pageNumber, int pageSize)
+    public static async Task<AppUserPagedList> CreateAsync(IDbConnection db, int pageNumber, int pageSize,
+                                                             string currentUsername, string gender,
+                                                             int minAge, int maxAge, string orderBy)
     {
-        // ESTE
-        var count = await db.QueryAsync<int>("sp_getUsersCount",
-                                    commandType: CommandType.StoredProcedure);
 
+        var minDob = DateTime.Today.AddYears(-maxAge - 1);
+        var maxDob = DateTime.Today.AddYears(-minAge);
+
+        // ESTE
+        var parametersCount = new DynamicParameters();
+
+        parametersCount.Add("@currentUsername", currentUsername);
+        parametersCount.Add("@gender", gender);
+        parametersCount.Add("@minDob", minDob);
+        parametersCount.Add("@maxDob", maxDob);
+
+        var count = await db.QueryAsync<int>("sp_getUsersCount",
+                                             parametersCount,
+                                             commandType: CommandType.StoredProcedure);
 
         List<AppUser> users;
         List<Photo> photos;
@@ -36,7 +49,12 @@ public class AppUserPagedList : List<AppUser>
 
         parameters.Add("@pageNumber", pageNumber);
         parameters.Add("@rowsOfPage", pageSize);
-        //parameters.Add("@sortingCol", user.Id);
+        parameters.Add("@currentUsername", currentUsername);
+        parameters.Add("@gender", gender);
+        parameters.Add("@minDob", minDob);
+        parameters.Add("@maxDob", maxDob);
+        parameters.Add("@sortingCol", orderBy);
+
         //parameters.Add("@sortType", user.Id);
 
         using (var lists = await db.QueryMultipleAsync("sp_getSortedAndPagedUsers",

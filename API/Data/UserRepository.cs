@@ -84,7 +84,10 @@ public class UserRepository : IUserRepository
 
     public async Task<AppUserPagedList> GetPagedUsersAsync(UserParams userParams)
     { // a cambio de GetMembersAsync
-        var pagedResult = await AppUserPagedList.CreateAsync(db, userParams.PageNumber, userParams.PageSize);
+        var pagedResult = await AppUserPagedList.CreateAsync(db, userParams.PageNumber, userParams.PageSize,
+                                                             userParams.CurrentUsername, userParams.Gender,
+                                                             userParams.MinAge, userParams.MaxAge,
+                                                             userParams.OrderBy);
 
         return pagedResult;
     }
