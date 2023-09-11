@@ -31,11 +31,24 @@ public class UsersController : BaseApiController
 
     //////////////////////////////////////////
     /////////////////////////////////////////////
+    //[HttpGet]
+    //public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
+    //{// el está usando getMembers
+    //    var users = await _userRepository.GetUsersAsync();
+    //    var members = _mapper.Map<IEnumerable<MemberDto>>(users);
+
+    //    return Ok(members);
+    //}
+
+    // CON PAGINACION
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
+    public async Task<ActionResult<AppUserPagedList>> GetUsers([FromQuery] UserParams userParams)
     {// el está usando getMembers
-        var users = await _userRepository.GetUsersAsync();
+        AppUserPagedList users = await _userRepository.GetPagedUsersAsync(userParams);
         var members = _mapper.Map<IEnumerable<MemberDto>>(users);
+
+        Response.AddPaginationHeader(new PaginationHeader(users.CurrentPage, users.PageSize, 
+                                                          users.TotalCount, users.TotalPages));
 
         return Ok(members);
     }
@@ -100,7 +113,7 @@ public class UsersController : BaseApiController
             AppUserId = user.Id
         };
 
-        // si es su primera foto => la pongo como mail
+        // si es su primera foto => la pongo como main
         // como estoy checando "user.Photos.Count" tengo que cargar las fotos con "GetUserByUsernameAsync"
         if (user.Photos.Count == 0)
         {
@@ -136,16 +149,6 @@ public class UsersController : BaseApiController
         if (photo.IsMain == 1) return BadRequest("This is already your main photo.");
 
         var currentMain = user.Photos.FirstOrDefault(p => p.IsMain == 1);
-
-        //if (currentMain != null) currentMain.IsMain = 0;
-
-        //photo.IsMain = 1;
-        //// tengo q actualizar las 2 fotos ( la nueva y la vieja mail )
-        //List<Photo> photoList = new()
-        //{
-        //    photo,
-        //    currentMain
-        //};
 
         var obj = new SetMainPhoto(currentMain.Id, photoId);
 

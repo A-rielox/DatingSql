@@ -7,15 +7,12 @@ public interface IUserRepository
 {
     Task<bool> UpdateUserAsync(AppUser user);
     Task<IEnumerable<AppUser>> GetUsersAsync();
+    Task<AppUserPagedList> GetPagedUsersAsync(UserParams userParams); // reemplaza a la de arriba
     Task<AppUser> GetUserByIdAsync(int id);
     Task<AppUser> GetUserByUsernameAsync(string username);
 
     //Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams);
     //Task<MemberDto> GetMemberAsync(string username);
-
-    //Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams);
-
-
 
     Task<int> AddPhotoAsync(Photo photo);    
     Task<bool> UpdatePhotos(SetMainPhoto setMainPhoto);

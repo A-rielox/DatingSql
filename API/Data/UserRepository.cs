@@ -82,6 +82,22 @@ public class UserRepository : IUserRepository
         */
     }
 
+    public async Task<AppUserPagedList> GetPagedUsersAsync(UserParams userParams)
+    { // a cambio de GetMembersAsync
+
+        //var query = await _context.Users
+        //    .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+        //    .AsNoTracking();
+
+        //    return await PagedList<MemberDto>.CreateAsync(
+        //                query,
+        //                userParams.PageNumber, userParams.PageSize);
+
+        var pagedResult = await AppUserPagedList.CreateAsync(db, userParams.PageNumber, userParams.PageSize);
+
+        return pagedResult;
+    }
+
     ////////////////////////////////////////////////
     ///////////////////////////////////////////////////
     public async Task<bool> UpdateUserAsync(AppUser user)
