@@ -40,8 +40,8 @@ public class AppUserPagedList : List<AppUser>
         //parameters.Add("@sortType", user.Id);
 
         using (var lists = await db.QueryMultipleAsync("sp_getSortedAndPagedUsers",
-                                    parameters,
-                                    commandType: CommandType.StoredProcedure))
+                                            parameters,
+                                            commandType: CommandType.StoredProcedure))
         {
             users = lists.Read<AppUser>().ToList();
             photos = lists.Read<Photo>().ToList();
@@ -53,9 +53,6 @@ public class AppUserPagedList : List<AppUser>
                              .ToList();
         });
 
-        // ESTE
-        var items = users;
-
-        return new AppUserPagedList(items, count.SingleOrDefault(), pageNumber, pageSize);
+        return new AppUserPagedList(users, count.SingleOrDefault(), pageNumber, pageSize);
     }
 }

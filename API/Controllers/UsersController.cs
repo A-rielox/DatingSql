@@ -45,6 +45,7 @@ public class UsersController : BaseApiController
     public async Task<ActionResult<AppUserPagedList>> GetUsers([FromQuery] UserParams userParams)
     {// el está usando getMembers
         AppUserPagedList users = await _userRepository.GetPagedUsersAsync(userParams);
+
         var members = _mapper.Map<IEnumerable<MemberDto>>(users);
 
         Response.AddPaginationHeader(new PaginationHeader(users.CurrentPage, users.PageSize, 
