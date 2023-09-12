@@ -105,6 +105,7 @@ public class UserRepository : IUserRepository
         parameters.Add("@interests", user.Interests);
         parameters.Add("@city", user.City);
         parameters.Add("@country", user.Country);
+        parameters.Add("@lastActive", user.LastActive);
 
         var res = await db.QueryAsync<int>("sp_updateUser",
                                             parameters,
