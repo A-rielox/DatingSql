@@ -30,6 +30,7 @@ public class AppUserPagedList : List<AppUser>
 
         var minDob = DateTime.Today.AddYears(-maxAge - 1);
         var maxDob = DateTime.Today.AddYears(-minAge);
+        // añadir años en sql DATEADD(year, 5, hire_date) AS five_years_date
 
         // ESTE
         var parametersCount = new DynamicParameters();

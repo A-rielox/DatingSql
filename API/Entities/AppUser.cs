@@ -39,12 +39,11 @@ public class AppUser
     // el cascade delete
 
     ////////////////////////////
-    //public List<UserLike> LikedByUsers { get; set; } // los q te dan like
+    ///public List<UserLike> LikedByUsers { get; set; } // los q te dan like
     //public List<UserLike> LikedUsers { get; set; } // a quienes les doy like
+    public List<AppUser> LikedByUsers { get; set; } // los q te dan like
+    public List<AppUser> LikedUsers { get; set; } // a quienes les doy like
 
-    // un SourceUser puede tener varios LikedUsers
-    // un LikedUser puede tener varios LikedByUsers
-    // la configuracion p' 2waybinding se hace en LA TABLA EN DataContext.cs
 
     ////////////////////////////
 
@@ -55,18 +54,4 @@ public class AppUser
     // es la misma navigation-property hacia la join-table en AppUser.cs y AppRole.cs
     //public ICollection<AppUserRole> UserRoles { get; set; }
 
-
-
-
-    //
-    //
-    //
-    // NO lo puedo incluir para q funcione el :
-    // .ProjectTo<MemberDto>(_mapper.ConfigurationProvider) en UserRepository
-    // q es p' hacer + eficiente la busqueda en la db
-    //
-    //public int GetAge()
-    //{
-    //    return DateOfBirth.CalculateAge();
-    //}
 }
