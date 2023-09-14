@@ -41,7 +41,9 @@ public class AppUser
     ////////////////////////////
     ///public List<UserLike> LikedByUsers { get; set; } // los q te dan like
     //public List<UserLike> LikedUsers { get; set; } // a quienes les doy like
+    [Write(false)] // x register user ( cambiarlo a sp )
     public List<AppUser> LikedByUsers { get; set; } // los q te dan like
+    [Write(false)] // x register user ( cambiarlo a sp )
     public List<AppUser> LikedUsers { get; set; } // a quienes les doy like
 
 

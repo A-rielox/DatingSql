@@ -123,6 +123,27 @@ export class MembersService {
    }
 
    //////////////////////////////////////
+   //////////     LIKES
+   //////////////////////////////////////
+   addLike(username: string) {
+      return this.http.post(this.baseUrl + 'likes/' + username, {});
+   }
+
+   getLikes(predicate: string /* , pageNumber: number, pageSize: number */) {
+      return this.http.get(this.baseUrl + 'likes?predicate=' + predicate);
+
+      // let params = getPaginationHeaders(pageNumber, pageSize);
+
+      // params = params.append('predicate', predicate);
+
+      // return getPaginatedResult<Member[]>(
+      //    this.baseUrl + 'likes',
+      //    params,
+      //    this.http
+      // );
+   }
+
+   //////////////////////////////////////
    //////////     PAGINATIONS
    //////////////////////////////////////
    private getPaginatedResult<T>(url: string, params: HttpParams) {
