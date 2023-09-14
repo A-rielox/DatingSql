@@ -129,8 +129,11 @@ export class MembersService {
       return this.http.post(this.baseUrl + 'likes/' + username, {});
    }
 
+   //                                                 NO PAGINE VIDEO 181
    getLikes(predicate: string /* , pageNumber: number, pageSize: number */) {
-      return this.http.get(this.baseUrl + 'likes?predicate=' + predicate);
+      return this.http.get<Member[]>(
+         this.baseUrl + 'likes?predicate=' + predicate
+      );
 
       // let params = getPaginationHeaders(pageNumber, pageSize);
 
