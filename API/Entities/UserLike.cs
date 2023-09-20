@@ -4,7 +4,7 @@
 
 public class UserLike
 {
-    // CONFIGURO LA TABLA EN DataContext.cs
+    // CONFIGURÓ LA TABLA EN DataContext.cs
     //public AppUser SourceUser { get; set; } // el q da el like
     public int SourceUserId { get; set; } // id del q da le like
 
@@ -15,3 +15,5 @@ public class UserLike
 
 // un SourceUser puede tener varios LikedUsers
 // un LikedUser puede tener varios LikedByUsers
+
+// on delete: cascade, para q SI se borre si se borra el usuario
