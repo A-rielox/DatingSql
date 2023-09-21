@@ -68,19 +68,20 @@ public class MessagesController : BaseApiController
     ////////////////////////////////////////////////
     ///////////////////////////////////////////////////
     //// GET:  api/messages
-    //[HttpGet]
-    //public async Task<ActionResult<PagedList<MessageDto>>> GetMessagesForUser(
-    //    [FromQuery] MessageParams messageParams)
-    //{
-    //    messageParams.Username = User.GetUsername();
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesForUser(
+                                                            [FromQuery] MessageParams messageParams)
+    {
+        messageParams.Username = User.GetUsername();
 
-    //    var messages = await _uow.MessageRepository.GetMessagesForUser(messageParams);
+        var messages = await _messageRepository.GetMessagesForUser(messageParams);
 
-    //    Response.AddPaginationHeader(new PaginationHeader(messages.CurrentPage, messages.PageSize,
-    //                                    messages.TotalCount, messages.TotalPages));
+        // no estoy paginando
+        //Response.AddPaginationHeader(new PaginationHeader(messages.CurrentPage, messages.PageSize,
+        //                                messages.TotalCount, messages.TotalPages));
 
-    //    return Ok(messages);
-    //}
+        return Ok(messages);
+    }
 
     ////////////////////////////////////////////////
     ///////////////////////////////////////////////////

@@ -1,7 +1,11 @@
 ﻿using API.DTOs;
 using API.Entities;
+using API.Helpers;
 using API.Interfaces;
+using AutoMapper;
 using Dapper;
+using System;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -9,10 +13,12 @@ namespace API.Data;
 
 public class MessageRepository : IMessageRepository
 {
+    private readonly IMapper _mapper;
     private IDbConnection db;
-    public MessageRepository(IConfiguration configuration)
+    public MessageRepository(IConfiguration configuration, IMapper mapper)
     {
         this.db = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
+        _mapper = mapper;
     }
 
 
@@ -90,9 +96,54 @@ public class MessageRepository : IMessageRepository
     ////////////////////////////////////////////////
     ///////////////////////////////////////////////////
     //
-    public Task<IEnumerable<MessageDto>> GetMessagesForUser()
+    public async Task<IEnumerable<MessageDto>> GetMessagesForUser(MessageParams messageParams)
     {
-        throw new NotImplementedException();
+        List<Message> messages;
+        List<Photo> photos;
+
+        using (var lists = await db.QueryMultipleAsync("sp_getMsgsForUser",
+                                    new { username = messageParams.Username, container  = messageParams.Container },
+                                    commandType: CommandType.StoredProcedure))
+        {
+            messages = lists.Read<Message>().ToList();
+            photos = lists.Read<Photo>().ToList();
+        }
+
+        var messagesDto = _mapper.Map<List<MessageDto>>(messages);
+
+        messagesDto.ForEach(m =>
+        {
+            m.SenderPhotoUrl = photos.Where(p => p.AppUserId == m.SenderId)
+                                     .FirstOrDefault().Url;
+
+            m.RecipientPhotoUrl = photos.Where(p => p.AppUserId == m.RecipientId)
+                                     .FirstOrDefault().Url; ;
+        });
+
+        return messagesDto.OrderBy(m => m.MessageSent);
+
+
+
+        /*
+        var query = _context.Messages.OrderBy(m => m.MessageSent)
+                                     .AsQueryable();
+
+        query = messageParams.Container switch
+        {
+            "Inbox" => query.Where(m => m.RecipientUsername == messageParams.Username && m.RecipientDeleted == false),
+            "Outbox" => query.Where(m => m.SenderUsername == messageParams.Username && m.SenderDeleted == false),
+            _ => query.Where(m => m.RecipientUsername == messageParams.Username && m.RecipientDeleted == false
+                                                            && m.DateRead == null) // los no leidos 
+        };
+
+        var messagesQuery = query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider);
+
+        var pagedMessages = await PagedList<MessageDto>
+                              .CreateAsync(messagesQuery, messageParams.PageNumber,
+                                           messageParams.PageSize);
+
+        return pagedMessages;
+        */
     }
 
 

@@ -1,5 +1,6 @@
 ﻿using API.DTOs;
 using API.Entities;
+using API.Helpers;
 
 namespace API.Interfaces;
 
@@ -11,7 +12,7 @@ public interface IMessageRepository
 
 
     //Task<PagedList<MessageDto>> GetMessagesForUser(MessageParams messageParams);
-    Task<IEnumerable<MessageDto>> GetMessagesForUser(); // el lo hace paginado
+    Task<IEnumerable<MessageDto>> GetMessagesForUser(MessageParams messageParams); // el lo hace paginado
 
 
     Task<IEnumerable<MessageDto>> GetMessageThread(string currentUserName, string recipientUserName);
