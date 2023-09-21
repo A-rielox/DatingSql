@@ -1,31 +1,104 @@
 ﻿using API.DTOs;
 using API.Entities;
 using API.Interfaces;
+using Dapper;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace API.Data;
 
 public class MessageRepository : IMessageRepository
 {
-    public void AddMessage(Message message)
+    private IDbConnection db;
+    public MessageRepository(IConfiguration configuration)
     {
-        throw new NotImplementedException();
+        this.db = new SqlConnection(configuration.GetConnectionString("DefaultConnection"));
     }
 
-    public void DeleteMessage(Message message)
+
+    ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
+    //
+    public async Task<bool> AddMessage(Message message)
     {
-        throw new NotImplementedException();
+        var parameters = new DynamicParameters();
+
+        parameters.Add("@senderId", message.SenderId);
+        parameters.Add("@senderUsername", message.SenderUsername);
+        parameters.Add("@recipientId", message.RecipientId);
+        parameters.Add("@recipientUsername", message.RecipientUsername);
+        parameters.Add("@content", message.Content);
+
+        var succes = await db.QueryAsync<int>("sp_addMsg",
+                                               parameters,
+                                               commandType: CommandType.StoredProcedure);
+
+        return succes.FirstOrDefault() == 1 ? true : false;
     }
 
-    public Task<Message> GetMessage(int id)
+
+    ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
+    //
+    public async Task<bool> DeleteMessage(Message message, string userNameDeleting)
     {
-        throw new NotImplementedException();
+        var succes = await db.QueryAsync<int>("sp_deleteMsg",
+                                    new { msgId = message.Id, userNameDeleting },
+                                    commandType: CommandType.StoredProcedure);
+
+        return succes.FirstOrDefault() > 0 ? true : false;
     }
 
+
+    ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
+    //
+    public async Task<Message> GetMessage(int id)
+    {
+        var msg = await db.QueryAsync<Message>("sp_getMsg",
+                                    new { msgId = id },
+                                    commandType: CommandType.StoredProcedure);
+
+        return msg.FirstOrDefault();
+    }
+    /*
+    public async Task<Message> GetMessage(int id)
+    {
+        Message msg;
+        List<Photo> photos;
+
+
+        using (var lists = await db.QueryMultipleAsync("sp_getMsg",
+                                    commandType: CommandType.StoredProcedure))
+        {
+            msg = lists.Read<Message>().FirstOrDefault();
+            photos = lists.Read<Photo>().ToList();
+        }
+
+        // depende de si quiero sacar msg o msgDto
+        // x ahora no ocupo foto
+
+        return msg;
+
+        //msg.ForEach(u =>
+        //{
+        //    u.Photos = photos.Where(p => p.AppUserId == u.Id)
+        //                     .ToList();
+        //});
+    }
+    */
+    ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
+    //
     public Task<IEnumerable<MessageDto>> GetMessagesForUser()
     {
         throw new NotImplementedException();
     }
 
+
+    ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////
+    //
     public Task<IEnumerable<MessageDto>> GetMessageThread(string currentUserName, string recipientUserName)
     {
         throw new NotImplementedException();
@@ -35,47 +108,8 @@ public class MessageRepository : IMessageRepository
 /*
 public class MessageRepository : IMessageRepository
 {
-    private readonly DataContext _context;
-    private readonly IMapper _mapper;
-
-    public MessageRepository(DataContext context, IMapper mapper)
-    {
-        _context = context;
-        _mapper = mapper;
-    }
-
-
-    /////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////
-    //
-
-    public void AddMessage(Message message)
-    {
-        _context.Messages.Add(message);
-        
-    }
-
-
-    /////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////
-    //
-    public void DeleteMessage(Message message)
-    {
-        _context.Messages.Remove(message);
-    }
-
-
-    /////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////
-    //
-    public async Task<Message> GetMessage(int id)
-    {
-        var message = await _context.Messages.FindAsync(id);
-
-        return message;
-    }
-
-
+    ...
+    
     /////////////////////////////////////////////////////
     /////////////////////////////////////////////////////
     //
@@ -134,7 +168,7 @@ public class MessageRepository : IMessageRepository
         return await query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider).ToListAsync();
     }
 
-    /*              previo ProjectTo
+    =====              previo ProjectTo
     {
         var messages = await _context.Messages
             .Include(u => u.Sender).ThenInclude(p => p.Photos)
@@ -163,19 +197,6 @@ public class MessageRepository : IMessageRepository
 
         return _mapper.Map<IEnumerable<MessageDto>>(messages);
     }
-    */
-
-
-    /////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////
-    //
-    //
-    //                  ------------ x UnitOfWork
-    //
-    //public async Task<bool> SaveAllAsync()
-    //{
-    //    return await _context.SaveChangesAsync() > 0;
-    //}
-}
+   ==========
 
 */
