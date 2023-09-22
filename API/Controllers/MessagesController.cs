@@ -86,18 +86,15 @@ public class MessagesController : BaseApiController
     ////////////////////////////////////////////////
     ///////////////////////////////////////////////////
     // GET:  api/messages/thread/{username}
-    //[HttpGet("thread/{username}")]
-    //public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesThread(string username)
-    //{
-    //    var currentUsername = User.GetUsername();
+    [HttpGet("thread/{username}")]
+    public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesThread(string username)
+    {
+        var currentUsername = User.GetUsername();
 
-    //    var messages = await _uow.MessageRepository.GetMessageThread(currentUsername, username);
-
-    //    // xel save q quite en el repository .GetMessageThread
-    //    if (_uow.HasChanges()) await _uow.Complete();
-
-    //    return Ok(messages);
-    //}
+        var messages = await _messageRepository.GetMessageThread(currentUsername, username);
+                
+        return Ok(messages);
+    }
 
     ////////////////////////////////////////////////
     ///////////////////////////////////////////////////

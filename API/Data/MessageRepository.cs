@@ -121,133 +121,36 @@ public class MessageRepository : IMessageRepository
         });
 
         return messagesDto.OrderBy(m => m.MessageSent);
-
-
-
-        /*
-        var query = _context.Messages.OrderBy(m => m.MessageSent)
-                                     .AsQueryable();
-
-        query = messageParams.Container switch
-        {
-            "Inbox" => query.Where(m => m.RecipientUsername == messageParams.Username && m.RecipientDeleted == false),
-            "Outbox" => query.Where(m => m.SenderUsername == messageParams.Username && m.SenderDeleted == false),
-            _ => query.Where(m => m.RecipientUsername == messageParams.Username && m.RecipientDeleted == false
-                                                            && m.DateRead == null) // los no leidos 
-        };
-
-        var messagesQuery = query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider);
-
-        var pagedMessages = await PagedList<MessageDto>
-                              .CreateAsync(messagesQuery, messageParams.PageNumber,
-                                           messageParams.PageSize);
-
-        return pagedMessages;
-        */
     }
 
 
     ////////////////////////////////////////////////
     ///////////////////////////////////////////////////
     //
-    public Task<IEnumerable<MessageDto>> GetMessageThread(string currentUserName, string recipientUserName)
-    {
-        throw new NotImplementedException();
+    public async Task<IEnumerable<MessageDto>> GetMessageThread(string currentUserName, string recipientUserName)
+    { // sp_getMsgsThread manda lista de mensajes y fotos
+        List<Message> messages;
+        List<Photo> photos;
+
+        using (var lists = await db.QueryMultipleAsync("sp_getMsgsThread",
+                                    new { currentUserName, recipientUserName },
+                                    commandType: CommandType.StoredProcedure))
+        {
+            messages = lists.Read<Message>().ToList();
+            photos = lists.Read<Photo>().ToList();
+        }
+
+        var messagesDto = _mapper.Map<List<MessageDto>>(messages);
+
+        messagesDto.ForEach(m =>
+        {
+            m.SenderPhotoUrl = photos.Where(p => p.AppUserId == m.SenderId)
+                                     .FirstOrDefault().Url;
+
+            m.RecipientPhotoUrl = photos.Where(p => p.AppUserId == m.RecipientId)
+                                     .FirstOrDefault().Url; ;
+        });
+
+        return messagesDto.OrderByDescending(m => m.MessageSent);
     }
 }
-
-/*
-public class MessageRepository : IMessageRepository
-{
-    ...
-    
-    /////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////
-    //
-    public async Task<PagedList<MessageDto>> GetMessagesForUser(MessageParams messageParams)
-    {
-        var query = _context.Messages.OrderBy(m => m.MessageSent)
-                                     .AsQueryable();
-
-        query = messageParams.Container switch
-        {
-            "Inbox" => query.Where(m => m.RecipientUsername == messageParams.Username && m.RecipientDeleted == false),
-            "Outbox"=> query.Where(m => m.SenderUsername == messageParams.Username && m.SenderDeleted == false),
-            _       => query.Where(m => m.RecipientUsername == messageParams.Username && m.RecipientDeleted == false
-                                                            && m.DateRead == null)
-        };
-
-        var messagesQuery = query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider);
-
-        var pagedMessages = await PagedList<MessageDto>
-                              .CreateAsync(messagesQuery, messageParams.PageNumber,
-                                           messageParams.PageSize);
-
-        return pagedMessages;
-    }
-
-
-    /////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////
-    //
-    public async Task<IEnumerable<MessageDto>> GetMessageThread(string currentUserName,
-                                                                string recipientUserName)
-    {
-        var query = _context.Messages
-            .Where(
-                m => m.RecipientUsername == currentUserName && m.RecipientDeleted == false &&
-                m.SenderUsername == recipientUserName ||
-                m.RecipientUsername == recipientUserName && m.SenderDeleted == false &&
-                m.SenderUsername == currentUserName
-            )
-            .OrderBy(m => m.MessageSent)
-            .AsQueryable();
-
-        var unreadMessages = query.Where(m => m.DateRead == null &&
-                                m.RecipientUsername == currentUserName).ToList();
-
-        if (unreadMessages.Any())
-        {
-            foreach (var message in unreadMessages)
-            {
-                message.DateRead = DateTime.UtcNow;
-            }
-
-            //await _context.SaveChangesAsync();  ---- x UnitOfWork guardo en el controller (MessagesController)
-        }
-
-        return await query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider).ToListAsync();
-    }
-
-    =====              previo ProjectTo
-    {
-        var messages = await _context.Messages
-            .Include(u => u.Sender).ThenInclude(p => p.Photos)
-            .Include(u => u.Recipient).ThenInclude(p => p.Photos)
-            .Where(
-                m => m.RecipientUsername == currentUserName && m.RecipientDeleted == false &&
-                m.SenderUsername == recipientUserName ||
-                m.RecipientUsername == recipientUserName && m.SenderDeleted == false &&
-                m.SenderUsername == currentUserName
-            )
-            .OrderByDescending(m => m.MessageSent)
-            .ToListAsync();
-
-        var unreadMessages = messages.Where(m => m.DateRead == null &&
-                                m.RecipientUsername == currentUserName).ToList();
-
-        if (unreadMessages.Any())
-        {
-            foreach (var message in unreadMessages)
-            {
-                message.DateRead = DateTime.UtcNow;
-            }
-
-            //await _context.SaveChangesAsync();  ---- x UnitOfWork guardo en el controller (MessagesController)
-        }
-
-        return _mapper.Map<IEnumerable<MessageDto>>(messages);
-    }
-   ==========
-
-*/
