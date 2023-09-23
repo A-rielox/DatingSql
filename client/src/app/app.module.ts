@@ -30,6 +30,8 @@ import { DatePickerComponent } from './_forms/date-picker/date-picker.component'
 // idioma pipe
 import localeEs from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
+// import { MemberMessagesComponent } from './members/member-messages/member-messages.component';
+
 registerLocaleData(localeEs, 'es');
 
 @NgModule({
@@ -50,6 +52,7 @@ registerLocaleData(localeEs, 'es');
       PhotoEditorComponent,
       TextInputComponent,
       DatePickerComponent,
+      // MemberMessagesComponent,
    ],
    imports: [
       BrowserModule,
