@@ -24,7 +24,7 @@ export class MemberMessagesComponent implements OnInit {
       // this.loadMessages();
    }
 
-   // MOVIDO A MEMBER-DETAIL.COMPONENT.TS
+   // MOVIDO A MEMBER-DETAIL.COMPONENT.TS p' q se carguen los mensages solo al activar la tab de msgs
    // loadMessages() {
    //    if (this.username) {
    //       this.messageService.getMessageThread(this.username).subscribe({

@@ -62,13 +62,17 @@ export class MemberDetailComponent implements OnInit {
       }
    }
 
-   selectTab(tabName: string) {}
-
    onTabActivated(data: TabDirective) {
       this.activeTab = data;
 
       if (this.activeTab.heading === 'Messages') {
          this.loadMessages();
+      }
+   }
+
+   selectTab(heading: string) {
+      if (this.memberTabs) {
+         this.memberTabs.tabs.find((t) => t.heading === heading)!.active = true;
       }
    }
 }

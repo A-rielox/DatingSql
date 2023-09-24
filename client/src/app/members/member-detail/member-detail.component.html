@@ -1,5 +1,4 @@
 <div class="row" *ngIf="member"> <!-- ahora tengo route guard -->
-    <!-- <div class="row"> -->
     <div class="col-4">
         <div class="card">
             <img src="{{ member.photoUrl || './assets/user.png' }}" alt="{{ member.knownAs }}"
@@ -16,7 +15,6 @@
                 </div>
                 <div>
                     <strong>Last active:</strong>
-                    <!-- la Z es p'q sepa q es time UTC -->
                     <p>{{ member.lastActive | date }}</p>
                 </div>
                 <div>
@@ -58,8 +56,6 @@
             </tab>
 
             <tab heading="Messages" (selectTab)="onTabActivated($event)">
-                Mensajes
-                <!-- <app-member-messages [username]="member.userName"></app-member-messages> -->
                 <app-member-messages [messages]="messages" [username]="member.userName"></app-member-messages>
             </tab>
         </tabset>
