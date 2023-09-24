@@ -4,8 +4,9 @@
          No messages yet... say hi by using the message box below
       </div>
 
-      <ul #scrollMe style="overflow: scroll; height: 400px" [scrollTop]="scrollMe.scrollHeight"
-         *ngIf="messages.length > 0" class="chat">
+      <!-- <ul #scrollMe style="overflow: scroll; height: 400px" [scrollTop]="scrollMe.scrollHeight"
+         *ngIf="messages.length > 0" class="chat"> -->
+      <ul style="overflow: scroll; height: 400px" *ngIf="messages.length > 0" class="chat">
          <li *ngFor="let message of messages">
             <div>
                <span class="chat-img float-end">
@@ -42,8 +43,8 @@
    <div class="card-footer">
       <form #messageForm="ngForm" (ngSubmit)="sendMessage()" autocomplete="off">
          <div class="input-group">
-            <input required type="text" class="form-control input-sm" placeholder="Send a private message"
-               [(ngModel)]="messageContent" name="messageContent" />
+            <input type="text" class="form-control input-sm" placeholder="Send a private message"
+               [(ngModel)]="messageContent" name="messageContent" required />
 
             <div class="input-group-append">
                <button [disabled]="!messageForm.valid" class="btn btn-primary" type="submit">

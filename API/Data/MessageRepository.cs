@@ -151,6 +151,6 @@ public class MessageRepository : IMessageRepository
                                      .FirstOrDefault().Url; ;
         });
 
-        return messagesDto.OrderByDescending(m => m.MessageSent);
+        return messagesDto.OrderBy(m => m.MessageSent);
     }
 }

@@ -19,7 +19,7 @@ import { Message } from 'src/app/_models/message';
 export class MemberDetailComponent implements OnInit {
    @ViewChild('memberTabs', { static: true }) memberTabs?: TabsetComponent;
    activeTab?: TabDirective;
-   member: Member | undefined;
+   member: Member = {} as Member;
    images: GalleryItem[] = [];
    messages: Message[] = [];
 
@@ -29,10 +29,30 @@ export class MemberDetailComponent implements OnInit {
       private messageService: MessageService
    ) {}
 
+   //                                           ⚡⚡⚡
+   // ngOnInit sucede antes d q se inicialice la view y en este punto no hay acceso a las tabs
+   // { static: true } es para que se construya inmediatamente y se tenga acceso a ellas en este punto
+   // pero tengo q quitar el *ngIf="member" de componente html para q SI se construya de inmediato
+   // p'esto ocupo el route resolver, p' cargar la info antes de que empiece a construir el componente
    ngOnInit(): void {
-      this.loadMember();
+      // this.loadMember();
+
+      //          ⚡⚡⚡         carga el member desde el route resolver
+      this.route.data.subscribe({
+         next: (data) => (this.member = data['member']),
+      });
+
+      // cambia el tab de acuerdo al query param q venga
+      this.route.queryParams.subscribe({
+         next: (params) => {
+            params['tab'] && this.selectTab(params['tab']);
+         },
+      });
+
+      this.getImages();
    }
 
+   /*                   estoy usando route resolver p' cargar el member
    loadMember() {
       const username = this.route.snapshot.paramMap.get('username');
       if (!username) return;
@@ -45,6 +65,7 @@ export class MemberDetailComponent implements OnInit {
          },
       });
    }
+    */
 
    loadMessages() {
       if (this.member) {
