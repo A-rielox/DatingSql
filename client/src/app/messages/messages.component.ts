@@ -15,7 +15,7 @@ export class MessagesComponent implements OnInit {
    pageSize = 5;
    container = 'Unread';
 
-   loading = false;
+   loading = false; // p'q muestre nada en los mensajes hasta q ya esten cargados
 
    constructor(private messageService: MessageService) {}
 
