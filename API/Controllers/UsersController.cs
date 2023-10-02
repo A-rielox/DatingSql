@@ -41,6 +41,7 @@ public class UsersController : BaseApiController
     //}
 
     // CON PAGINACION
+    //[Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<AppUserPagedList>> GetUsers([FromQuery] UserParams userParams)
     {// el está usando getMembers
@@ -69,7 +70,8 @@ public class UsersController : BaseApiController
 
 
     //////////////////////////////////////////
-    /////////////////////////////////////////////    
+    /////////////////////////////////////////////
+    //[Authorize(Roles = "Member")]
     [HttpGet("{username}")]
     public async Task<ActionResult<AppUser>> GetUser(string username)
     {// el está usando getMember

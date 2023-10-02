@@ -10,6 +10,7 @@ using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Controllers;
 
@@ -47,15 +48,33 @@ public class AccountController : BaseApiController
         user.UserName = registerDto.Username.ToLower();
         user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
         user.PasswordSalt = hmac.Key;
+        //db.Insert(user); AHORA CON SP
 
-        db.Insert(user);
+        // creo user con sp y lo pongo con role 'Member'
+        var parameters = new DynamicParameters();
+
+        parameters.Add("@userName", user.UserName);
+        parameters.Add("@knownAs", user.KnownAs);
+        parameters.Add("@gender", user.Gender);
+        parameters.Add("@dateOfBirth", user.DateOfBirth);
+        parameters.Add("@city", user.City);
+        parameters.Add("@country", user.Country);
+        parameters.Add("@passwordHash", user.PasswordHash);
+        parameters.Add("@passwordSalt", user.PasswordSalt);
+
+        // retorno el userId creado
+        var succes = await db.QueryAsync<int>("sp_createUser",
+                                               parameters,
+                                               commandType: CommandType.StoredProcedure);
+
+        if (succes.FirstOrDefault() <= 0) return BadRequest("Problems creating the user.");
 
         var userDto = new UserDto
         {
             UserName = user.UserName,
             KnownAs = user.KnownAs,
             Gender = user.Gender,
-            Token = _tokenService.CreateToken(user)
+            Token = await _tokenService.CreateToken(user)
         };
 
         return Ok(userDto);
@@ -67,11 +86,6 @@ public class AccountController : BaseApiController
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
-        //var user = (
-        //            await db.QueryAsync<AppUser>("sp_getUserByUserName",
-        //                        new { userName = loginDto.Username },
-        //                        commandType: CommandType.StoredProcedure)
-        //            ).FirstOrDefault();
         var user = await _userRepository.GetUserByUsernameAsync(loginDto.Username);
 
         if (user == null) return Unauthorized("Invalid Username.");
@@ -90,7 +104,7 @@ public class AccountController : BaseApiController
             UserName = user.UserName,
             KnownAs = user.KnownAs,
             Gender = user.Gender,
-            Token = _tokenService.CreateToken(user),
+            Token = await _tokenService.CreateToken(user),
             PhotoUrl = user.Photos.FirstOrDefault(p => p.IsMain == 1)?.Url
         };
 
