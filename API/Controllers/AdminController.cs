@@ -65,35 +65,33 @@ public class AdminController : BaseApiController
         /**/
         if (string.IsNullOrEmpty(username)) return BadRequest("You must select at least one role.");
 
-        var selectedRoles = roles.Split(",").ToArray();
+        //var selectedRoles = roles.Split(",").ToList();
 
-        //var rolesForDb = selectedRoles.Select(r => new { username, role = r });
+        // arreglar estoy solo mandando la lista de nuevos roles
 
-        var user = await _userManager.FindByNameAsync(username);
+        List<FromDbUserForRoles> usersList;
+        List<FromDbRoleForRoles> rolesList;
 
-        // SIEMPRE q agarre cosas de un parameter TENGO q checar q no sea null
-        if (user == null) return NotFound();
+        using (var lists = await db.QueryMultipleAsync("sp_editRoles",
+                                    // @userName NVARCHAR(50),
+                                    //@rolesList NVARCHAR(500)
+                                    new { userName = username, rolesList = roles },
+                                    commandType: CommandType.StoredProcedure))
+        {
+            usersList = lists.Read<FromDbUserForRoles>().ToList();
+            rolesList = lists.Read<FromDbRoleForRoles>().ToList();
+        }
 
-        // roles actuales
-        var userRoles = await _userManager.GetRolesAsync(user);
+        usersList.ForEach(u =>
+        {
+            u.Roles = rolesList.Where(r => r.UserId == u.Id).Select(r => r.name).ToList();
+        });
 
-        // añado los reles q se mandan en el query ( except p' no volver a poner los q ya tiene )
-        var result = await _userManager.AddToRolesAsync(user, selectedRoles.Except(userRoles));
+        
+        //// retorno la lista actualizado de los roles q se tiene
+        
 
-        if (!result.Succeeded) return BadRequest("Failed to add to roles.");
-
-        // para quitar roles
-        // si ya tenia algun role y no lo pasé como role en el query se va a remover
-        result = await _userManager.RemoveFromRolesAsync(user, userRoles.Except(selectedRoles));
-
-        if (!result.Succeeded) return BadRequest("Failed to remove from roles.");
-
-        // retorno la lista actualizado de los roles q se tiene
-        return Ok(await _userManager.GetRolesAsync(user));
-
-        /**/
-
-        return Ok();
+        return Ok(usersList);
     }
 
     ////////////////////////////////////////////////////////
