@@ -30,6 +30,11 @@ import { DatePickerComponent } from './_forms/date-picker/date-picker.component'
 // idioma pipe
 import localeEs from '@angular/common/locales/es';
 import { registerLocaleData } from '@angular/common';
+import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
+import { PhotoManagementComponent } from './admin/photo-management/photo-management.component';
+import { UserManagementComponent } from './admin/user-management/user-management.component';
+import { HasRoleDirective } from './_directives/has-role.directive';
+import { RolesModalComponent } from './modals/roles-modal/roles-modal.component';
 // import { MemberMessagesComponent } from './members/member-messages/member-messages.component';
 
 registerLocaleData(localeEs, 'es');
@@ -52,6 +57,11 @@ registerLocaleData(localeEs, 'es');
       PhotoEditorComponent,
       TextInputComponent,
       DatePickerComponent,
+      AdminPanelComponent,
+      PhotoManagementComponent,
+      UserManagementComponent,
+      HasRoleDirective,
+      RolesModalComponent,
       // MemberMessagesComponent,
    ],
    imports: [

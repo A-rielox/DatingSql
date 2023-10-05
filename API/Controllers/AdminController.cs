@@ -60,7 +60,7 @@ public class AdminController : BaseApiController
     // POST: admin/edit-roles/{username}            CAMBIAR A Q SEA CON USERID EN LUGAR DE USERNAME
     [Authorize(Policy = "RequireAdminRole")]
     [HttpPost("edit-roles/{username}")] // deberia ser PUT xq se esta actualizando
-    public async Task<ActionResult> EditRoles(string username, [FromQuery] string roles)
+    public async Task<ActionResult<List<string>>> EditRoles(string username, [FromQuery] string roles)
     {
         /**/
         if (string.IsNullOrEmpty(username)) return BadRequest("You must select at least one role.");
@@ -69,29 +69,35 @@ public class AdminController : BaseApiController
 
         // arreglar estoy solo mandando la lista de nuevos roles
 
-        List<FromDbUserForRoles> usersList;
-        List<FromDbRoleForRoles> rolesList;
+        //List<FromDbUserForRoles> usersList;
+        //List<FromDbRoleForRoles> rolesList;
 
-        using (var lists = await db.QueryMultipleAsync("sp_editRoles",
-                                    // @userName NVARCHAR(50),
-                                    //@rolesList NVARCHAR(500)
+        //using (var lists = await db.QueryMultipleAsync("sp_editRoles",
+        //                            // @userName NVARCHAR(50),
+        //                            //@rolesList NVARCHAR(500)
+        //                            new { userName = username, rolesList = roles },
+        //                            commandType: CommandType.StoredProcedure))
+        //{
+        //    usersList = lists.Read<FromDbUserForRoles>().ToList();
+        //    rolesList = lists.Read<FromDbRoleForRoles>().ToList();
+        //}
+
+        //usersList.ForEach(u =>
+        //{
+        //    u.Roles = rolesList.Where(r => r.UserId == u.Id).Select(r => r.name).ToList();
+        //});
+
+
+        ////// retorno la lista actualizado de los roles q se tiene
+
+
+        //return Ok(usersList);
+
+        var newRoles = await db.QueryAsync<string>("sp_editRoles",
                                     new { userName = username, rolesList = roles },
-                                    commandType: CommandType.StoredProcedure))
-        {
-            usersList = lists.Read<FromDbUserForRoles>().ToList();
-            rolesList = lists.Read<FromDbRoleForRoles>().ToList();
-        }
+                                    commandType: CommandType.StoredProcedure);
 
-        usersList.ForEach(u =>
-        {
-            u.Roles = rolesList.Where(r => r.UserId == u.Id).Select(r => r.name).ToList();
-        });
-
-        
-        //// retorno la lista actualizado de los roles q se tiene
-        
-
-        return Ok(usersList);
+        return newRoles.ToList();
     }
 
     ////////////////////////////////////////////////////////
