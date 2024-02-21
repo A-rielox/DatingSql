@@ -3,6 +3,7 @@ using API.Interfaces;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 // en BaseApiController pongo la anotation [ServiceFilter(typeof(LogUserActivity))]
+// pongo services.AddScoped<LogUserActivity>(); en ApplicationServiceExtension.cs
 
 namespace API.Helpers;
 
